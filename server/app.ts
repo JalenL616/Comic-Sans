@@ -1,9 +1,8 @@
 import express from 'express'
 import cors from 'cors'
-
-// To be added:
-// UPC format checker (for type, num digits, format)
-
+import 'dotenv/config'
+import { validateUPC } from './utils/validation.js'
+import { searchComicByUPC } from './services/metronService.js'
 
 const app = express()
 
@@ -22,17 +21,25 @@ app.get('/', (req, res) => {
 })
 
 // Comic search route
-app.get('/api/comics', (req, res) => {
-  const query = req.query.search;
-  if (!query || query === "")
-  {
-    console.log('No search query provided');
-    res.json([])
-    return
-  }
-  console.log(`Searching for: ${query}`);
-  res.json([{ id: 1, title: 'Spider-Man #1', upc: query, price: 100 }])
+app.get('/api/comics', async (req, res) => {
+  const upc = req.query.search as string;
   
+  const validation = validateUPC(upc);
+  if (!validation.valid) {
+    res.status(400).json({ error: validation.error });
+    return;
+  }
+
+  try {
+    const comic = await searchComicByUPC(upc);
+    console.log(`Found comic with UPC: ${upc}`)
+    res.json(comic);
+  } catch (error) {
+    console.log('Error searching comic:', error);
+    res.status(500).json({
+      error: 'Failed to search comics' 
+    })
+  }
 })
 
 export default app
