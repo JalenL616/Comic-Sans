@@ -1,10 +1,11 @@
-export interface comic {
-    series: {
-      name: string;
-      volume: string;
-      year_began: string;
-    }
-    number: string;
-    issue: string;
-    image: string;
+export interface Comic {
+    upc: string;
+    name: string;
+    issueNumber: string;
+    seriesName: string;
+    seriesVolume: string;
+    seriesYear: string;
+    coverImage: string;
+    printing: string;
+    variantNumber: string;
 }

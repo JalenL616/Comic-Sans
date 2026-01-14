@@ -1,6 +1,8 @@
 import { MetronComic, MetronResponse } from '../types/metron.js'
+import { mapMetronToComic } from './comicMapper.js'
+import { Comic } from '../types/comic.js';
 
-export async function searchComicByUPC(upc: string): Promise<MetronComic | null> {
+export async function searchComicByUPC(upc: string): Promise<Comic | null> {
     const username = process.env.METRON_USERNAME;
     const password = process.env.METRON_PASSWORD;
 
@@ -26,5 +28,10 @@ export async function searchComicByUPC(upc: string): Promise<MetronComic | null>
     }
 
     const data: MetronResponse = await response.json();
-    return data.results?.[0] || null;
+    const metronComic: MetronComic = data.results?.[0];
+    
+    if (!metronComic) return null;
+
+    // Return mapped metron comic
+    return mapMetronToComic(metronComic, upc);
 }
