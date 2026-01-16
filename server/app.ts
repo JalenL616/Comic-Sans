@@ -14,7 +14,8 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://comic-price-evaluator.vercel.app'
+    'https://comic-price-evaluator.vercel.app',
+    'https://comic-scans.vercel.app'
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],

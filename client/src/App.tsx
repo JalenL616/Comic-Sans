@@ -41,16 +41,28 @@ function App() {
     setComics([]);
   }
 
-  function handleRemoveComic(upc: string) {                              
-    setComics(prev => prev.filter(comic => comic.upc !== upc));          
+  function handleRemoveComic(upc: string) {
+    setComics(prev => prev.filter(comic => comic.upc !== upc));
   }
-     
+
+  function handleFileUpload(comic: Comic) {
+    // Check for duplicates
+    const isDuplicate = comics.some(c => c.upc === comic.upc);
+
+    if (isDuplicate) {
+      setError('Comic already in results');
+    } else {
+      setComics(prev => [...prev, comic]);
+      setError(null);
+    }
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Comic Scans</h1>
         <SearchBar onSearch={handleSearch} />
-        <FileUpload />
+        <FileUpload onComicFound={handleFileUpload} />
 
         {comics.length > 0 && (
           <button onClick={handleClearAll} className="clear-button">
