@@ -51,7 +51,6 @@ io.on('connection', (socket) => {
   })
 })
 
-httpServer.listen(PORT, '0.0.0.0', () => {
+httpServer.listen(Number(PORT), () => {
   console.log(`Server running on http://localhost:${PORT}`)
-  console.log(`Network: http://10.39.64.112:${PORT}`)
 })
