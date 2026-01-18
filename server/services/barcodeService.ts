@@ -1,4 +1,5 @@
 const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8000';
+const BARCODE_TIMEOUT_MS = 10000; // 10 seconds
 
 export interface BarcodeResult {
   upc: string;
@@ -16,10 +17,17 @@ export async function scanBarcode(imageBuffer: Buffer): Promise<BarcodeResult | 
 
     console.log('Sending image to Python service...');
 
+    // Add timeout to prevent long waits
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), BARCODE_TIMEOUT_MS);
+
     const response = await fetch(`${PYTHON_SERVICE_URL}/scan`, {
       method: 'POST',
       body: formData,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const error = await response.json();
@@ -36,7 +44,11 @@ export async function scanBarcode(imageBuffer: Buffer): Promise<BarcodeResult | 
     };
 
   } catch (error) {
-    console.error('Error calling barcode service:', error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Barcode service timeout');
+    } else {
+      console.error('Error calling barcode service:', error);
+    }
     return null;
   }
 }
