@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
+import type { Comic } from '../types/comic';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-type ConnectionStatus = 'connecting' | 'connected' | 'error';
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 export function ScanPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [isScanning, setIsScanning] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scanCount, setScanCount] = useState(0);
+  const [lastComic, setLastComic] = useState<Comic | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,21 +42,30 @@ export function ScanPage() {
 
     newSocket.on('disconnect', () => {
       console.log('Phone socket disconnected');
+      setStatus('disconnected');
     });
 
-    setSocket(newSocket);
+    socketRef.current = newSocket;
 
     return () => {
       newSocket.disconnect();
     };
   }, [sessionId]);
 
+  function handleDisconnect() {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    setStatus('disconnected');
+  }
+
   async function handleCapture(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file || !socket || !sessionId) return;
+    if (!file || !socketRef.current || !sessionId) return;
 
     setIsScanning(true);
-    setMessage(null);
+    setLastComic(null);
     setError(null);
 
     try {
@@ -73,8 +84,9 @@ export function ScanPage() {
       }
 
       // Send comic to desktop via WebSocket
-      socket.emit('barcode-scanned', { sessionId, comic: data });
-      setMessage(`Found: ${data.name}`);
+      socketRef.current.emit('barcode-scanned', { sessionId, comic: data });
+      setScanCount(prev => prev + 1);
+      setLastComic(data);
 
     } catch (err) {
       console.error('Scan error:', err);
@@ -110,16 +122,48 @@ export function ScanPage() {
     );
   }
 
+  if (status === 'disconnected') {
+    return (
+      <div className="scan-page">
+        <div className="scan-disconnected">
+          <h2>Disconnected</h2>
+          <p>You've disconnected from the desktop.</p>
+          {scanCount > 0 && <p className="scan-count">{scanCount} comic{scanCount !== 1 ? 's' : ''} scanned</p>}
+          <p className="scan-instructions">You can close this page.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="scan-page">
       <div className="scan-header">
         <h1>Comic Scanner</h1>
         <p className="scan-status connected">Connected to desktop</p>
+        {scanCount > 0 && <p className="scan-count">{scanCount} scanned</p>}
       </div>
 
       <div className="scan-content">
+        {lastComic ? (
+          <div className="scanned-comic">
+            <img
+              src={lastComic.coverImage}
+              alt={lastComic.name}
+              className="scanned-comic-image"
+            />
+            <div className="scanned-comic-info">
+              <p className="scanned-comic-name">{lastComic.name}</p>
+              <p className="scanned-comic-added">Added to collection!</p>
+            </div>
+          </div>
+        ) : (
+          <p className="scan-instructions">
+            Point your camera at a comic book barcode and tap capture.
+          </p>
+        )}
+
         <label className={`scan-button ${isScanning ? 'scanning' : ''}`}>
-          {isScanning ? 'Scanning...' : 'Capture Barcode'}
+          {isScanning ? 'Scanning...' : lastComic ? 'Scan Another' : 'Capture Barcode'}
           <input
             ref={inputRef}
             type="file"
@@ -131,18 +175,13 @@ export function ScanPage() {
           />
         </label>
 
-        {message && (
-          <div className="scan-message success">{message}</div>
-        )}
-
         {error && (
           <div className="scan-message error">{error}</div>
         )}
 
-        <p className="scan-instructions">
-          Point your camera at a comic book barcode and tap capture.
-          The comic will appear on your desktop instantly.
-        </p>
+        <button onClick={handleDisconnect} className="disconnect-button">
+          Disconnect
+        </button>
       </div>
     </div>
   );

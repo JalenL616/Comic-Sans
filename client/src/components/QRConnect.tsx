@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { io, Socket } from 'socket.io-client';
 import type { Comic } from '../types/comic';
@@ -15,34 +15,22 @@ interface QRConnectProps {
 type ConnectionStatus = 'disconnected' | 'waiting' | 'connected';
 
 export function QRConnect({ onComicReceived }: QRConnectProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('disconnected');
+  const socketRef = useRef<Socket | null>(null);
+  const onComicReceivedRef = useRef(onComicReceived);
 
-  const generateSessionId = useCallback(() => {
-    return crypto.randomUUID();
-  }, []);
-
-  const openModal = useCallback(() => {
-    const newSessionId = generateSessionId();
-    setSessionId(newSessionId);
-    setIsOpen(true);
-    setStatus('waiting');
-  }, [generateSessionId]);
-
-  const closeModal = useCallback(() => {
-    setIsOpen(false);
-    setSessionId(null);
-    setStatus('disconnected');
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
-    }
-  }, [socket]);
-
+  // Keep callback ref updated
   useEffect(() => {
-    if (!isOpen || !sessionId) return;
+    onComicReceivedRef.current = onComicReceived;
+  }, [onComicReceived]);
+
+  const connect = useCallback(() => {
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    setStatus('waiting');
+    setIsModalOpen(true);
 
     const newSocket = io(API_URL, {
       transports: ['websocket', 'polling']
@@ -50,7 +38,7 @@ export function QRConnect({ onComicReceived }: QRConnectProps) {
 
     newSocket.on('connect', () => {
       console.log('Desktop socket connected');
-      newSocket.emit('join-session', sessionId);
+      newSocket.emit('join-session', newSessionId);
     });
 
     newSocket.on('phone-connected', () => {
@@ -65,31 +53,67 @@ export function QRConnect({ onComicReceived }: QRConnectProps) {
 
     newSocket.on('comic-received', (comic: Comic) => {
       console.log('Comic received from phone:', comic);
-      onComicReceived(comic);
+      onComicReceivedRef.current(comic);
     });
 
     newSocket.on('connect_error', (error: Error) => {
       console.error('Socket connection error:', error);
     });
 
-    setSocket(newSocket);
+    socketRef.current = newSocket;
+  }, []);
 
+  const disconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    setSessionId(null);
+    setStatus('disconnected');
+    setIsModalOpen(false);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
+
+  const openModal = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      newSocket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
-  }, [isOpen, sessionId, onComicReceived]);
+  }, []);
 
   const scanUrl = sessionId
     ? `${CLIENT_URL}/scan/${sessionId}`
     : '';
 
+  const isConnected = status === 'connected' || status === 'waiting';
+
   return (
     <>
-      <button onClick={openModal} className="qr-connect-button">
-        Connect Phone
-      </button>
+      {!isConnected ? (
+        <button onClick={connect} className="qr-connect-button">
+          Connect Phone
+        </button>
+      ) : (
+        <div className="qr-button-group">
+          <button onClick={openModal} className="qr-connect-button qr-show-button">
+            {status === 'connected' ? 'Phone Connected' : 'Show QR Code'}
+          </button>
+          <button onClick={disconnect} className="qr-disconnect-button">
+            Disconnect
+          </button>
+        </div>
+      )}
 
-      {isOpen && (
+      {isModalOpen && sessionId && (
         <div className="qr-modal-overlay" onClick={closeModal}>
           <div className="qr-modal" onClick={(e) => e.stopPropagation()}>
             <button className="qr-modal-close" onClick={closeModal}>
@@ -99,14 +123,12 @@ export function QRConnect({ onComicReceived }: QRConnectProps) {
             <h2>Scan with Phone</h2>
 
             <div className="qr-code-container">
-              {sessionId && (
-                <QRCodeSVG
-                  value={scanUrl}
-                  size={200}
-                  level="M"
-                  includeMargin
-                />
-              )}
+              <QRCodeSVG
+                value={scanUrl}
+                size={200}
+                level="M"
+                includeMargin
+              />
             </div>
 
             <div className={`qr-status qr-status-${status}`}>
@@ -125,7 +147,9 @@ export function QRConnect({ onComicReceived }: QRConnectProps) {
             </div>
 
             <p className="qr-instructions">
-              Scan this QR code with your phone camera to connect and start scanning barcodes.
+              {status === 'connected'
+                ? 'You can close this modal. Comics will appear as you scan them.'
+                : 'Scan this QR code with your phone camera to connect.'}
             </p>
           </div>
         </div>
