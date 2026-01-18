@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Comic } from '../types/comic';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -10,11 +10,10 @@ interface FileUploadProps {
 export function FileUpload({ onComicFound }: FileUploadProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  async function uploadFile(file: File) {
     setLoading(true);
     setError(null);
 
@@ -36,12 +35,7 @@ export function FileUpload({ onComicFound }: FileUploadProps) {
       }
 
       console.log('Comic found:', data);
-
-      // Pass comic to parent (App.tsx) to add to grid
       onComicFound(data);
-
-      // Reset the input so the same file can be uploaded again
-      e.target.value = '';
 
     } catch (err) {
       console.error('Error:', err);
@@ -51,11 +45,55 @@ export function FileUpload({ onComicFound }: FileUploadProps) {
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadFile(file);
+    e.target.value = '';
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      uploadFile(file);
+    } else {
+      setError('Please drop an image file');
+    }
+  }
+
   return (
     <div className="file-upload">
-      <label className="upload-button">
-        {loading ? 'Scanning...' : 'Upload Barcode'}
+      <label
+        className={`upload-button ${isDragging ? 'dragging' : ''}`}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {loading ? 'Scanning...' : isDragging ? 'Drop image here' : 'Upload Barcode'}
         <input
+          ref={inputRef}
           type="file"
           accept="image/*"
           onChange={handleFileChange}

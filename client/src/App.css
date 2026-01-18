@@ -75,6 +75,12 @@
   background-color: #0056b3;
 }
 
+.upload-button.dragging {
+  background-color: #28a745;
+  border: 2px dashed white;
+  transform: scale(1.05);
+}
+
 .upload-error {
   color: #dc3545;
   font-size: 0.875rem;
