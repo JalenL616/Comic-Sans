@@ -1188,10 +1188,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(30, 34, 48, 0.95);
   padding: 4px 12px 4px 4px;
   border-radius: var(--radius-full);
   animation: notificationFade 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 100;
 }
 
@@ -1201,7 +1202,7 @@
 }
 
 .scanned-comic-mini.duplicate {
-  background: rgba(243, 156, 18, 0.2);
+  border-color: var(--color-warning);
 }
 
 .scanned-comic-image-mini {
