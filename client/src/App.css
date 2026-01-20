@@ -760,8 +760,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1d26 0%, #0a0b0e 100%);
-  padding: var(--space-lg);
+  background: #000;
   position: relative;
   overflow: hidden;
 }
@@ -1033,18 +1032,16 @@
 /* Fullscreen Camera */
 .live-camera-fullscreen {
   position: absolute;
-  inset: 0;
+  inset: var(--space-sm);
   background: var(--color-bg-primary);
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
   overflow: hidden;
-  margin: var(--space-sm);
 }
 
 .live-camera-video-full {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-xl);
 }
 
 .camera-error {
@@ -1089,7 +1086,7 @@
   background: white;
   opacity: 0;
   pointer-events: none;
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
 }
 
 .capture-flash.active {
@@ -1104,10 +1101,10 @@
 
 /* Capture Button - Fixed Bottom Center */
 .capture-button {
-  position: absolute;
+  position: fixed;
   bottom: 60px;
   left: 50%;
-  transform: translateX(-50%);
+  margin-left: -35px;
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -1118,7 +1115,7 @@
   align-items: center;
   justify-content: center;
   padding: 3px;
-  z-index: 20;
+  z-index: 100;
 }
 
 .capture-button:active:not(:disabled) .capture-button-inner {
@@ -1164,7 +1161,7 @@
 
 /* Exit Button - Fixed Bottom Right */
 .disconnect-button-mini {
-  position: absolute;
+  position: fixed;
   bottom: 75px;
   right: var(--space-lg);
   padding: var(--space-sm) var(--space-md);
@@ -1174,30 +1171,28 @@
   border-radius: var(--radius-full);
   font-size: 0.8rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  z-index: 20;
+  transition: background var(--transition-fast);
+  z-index: 100;
 }
 
 .disconnect-button-mini:hover {
   background: rgba(255, 255, 255, 0.25);
-  transform: none;
 }
 
 /* Scanned Comic Notification - Fixed Bottom Center */
 .scanned-comic-mini {
-  position: absolute;
-  bottom: var(--space-md);
+  position: fixed;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  background: rgba(30, 34, 48, 0.95);
-  padding: var(--space-xs) var(--space-md);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 4px 12px 4px 4px;
   border-radius: var(--radius-full);
   animation: notificationFade 0.3s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 20;
+  z-index: 100;
 }
 
 @keyframes notificationFade {
@@ -1206,37 +1201,37 @@
 }
 
 .scanned-comic-mini.duplicate {
-  border-color: var(--color-warning);
+  background: rgba(243, 156, 18, 0.2);
 }
 
 .scanned-comic-image-mini {
-  width: 28px;
-  height: auto;
-  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .scanned-comic-info-mini {
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .scanned-comic-name-mini {
   margin: 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  color: var(--color-text-primary);
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 150px;
+  max-width: 120px;
 }
 
 .scanned-comic-status {
   margin: 0;
   font-size: 0.65rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
