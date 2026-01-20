@@ -24,6 +24,7 @@ export function ScanPage() {
   const [lastComic, setLastComic] = useState<Comic | null>(null);
   const [lastScanResult, setLastScanResult] = useState<ScanResult>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [showLastComic, setShowLastComic] = useState(false);
 
   // Socket connection
   useEffect(() => {
@@ -59,6 +60,8 @@ export function ScanPage() {
       console.log('Duplicate comic detected:', comic.name);
       setLastComic(comic);
       setLastScanResult('duplicate');
+      setShowLastComic(true);
+      setTimeout(() => setShowLastComic(false), 3000);
     });
 
     socketRef.current = newSocket;
@@ -175,6 +178,8 @@ export function ScanPage() {
         setScanCount(prev => prev + 1);
         setLastComic(data);
         setLastScanResult('added');
+        setShowLastComic(true);
+        setTimeout(() => setShowLastComic(false), 3000);
 
       } catch (err) {
         console.error('Scan error:', err);
@@ -238,13 +243,13 @@ export function ScanPage() {
 
       <div className="scan-content-live">
         {/* Live Camera View */}
-        <div className="live-camera-container">
+        <div className="live-camera-fullscreen">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="live-camera-video"
+            className="live-camera-video-full"
           />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -262,44 +267,42 @@ export function ScanPage() {
           )}
         </div>
 
-        {/* Bottom Controls */}
-        <div className="scan-controls">
-          {/* Last Scanned Comic (mini) */}
-          {lastComic && (
-            <div className={`scanned-comic-mini ${lastScanResult === 'duplicate' ? 'duplicate' : ''}`}>
-              <img
-                src={lastComic.coverImage}
-                alt={lastComic.name}
-                className="scanned-comic-image-mini"
-              />
-              <div className="scanned-comic-info-mini">
-                <p className="scanned-comic-name-mini">{lastComic.name}</p>
-                {lastScanResult === 'duplicate' ? (
-                  <p className="scanned-comic-status duplicate">Already in collection</p>
-                ) : (
-                  <p className="scanned-comic-status added">Added!</p>
-                )}
-              </div>
-            </div>
+        {/* Fixed Bottom Controls */}
+        {/* Capture Button - Center */}
+        <button
+          onClick={captureAndScan}
+          disabled={!isCameraActive}
+          className="capture-button"
+        >
+          <div className="capture-button-inner" />
+          {pendingScans > 0 && (
+            <span className="capture-pending-badge">{pendingScans}</span>
           )}
+        </button>
 
-          {/* Capture Button */}
-          <button
-            onClick={captureAndScan}
-            disabled={!isCameraActive}
-            className={`capture-button ${pendingScans > 0 ? 'processing' : ''}`}
-          >
-            <div className="capture-button-inner" />
-            {pendingScans > 0 && (
-              <span className="capture-pending-badge">{pendingScans}</span>
-            )}
-          </button>
+        {/* Exit Button - Bottom Right */}
+        <button onClick={handleDisconnect} className="disconnect-button-mini">
+          Exit
+        </button>
 
-          {/* Disconnect */}
-          <button onClick={handleDisconnect} className="disconnect-button-mini">
-            Exit
-          </button>
-        </div>
+        {/* Last Scanned Comic - Bottom Left */}
+        {showLastComic && lastComic && (
+          <div className={`scanned-comic-mini ${lastScanResult === 'duplicate' ? 'duplicate' : ''}`}>
+            <img
+              src={lastComic.coverImage}
+              alt={lastComic.name}
+              className="scanned-comic-image-mini"
+            />
+            <div className="scanned-comic-info-mini">
+              <p className="scanned-comic-name-mini">{lastComic.name}</p>
+              {lastScanResult === 'duplicate' ? (
+                <p className="scanned-comic-status duplicate">Already in collection</p>
+              ) : (
+                <p className="scanned-comic-status added">Added!</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="scan-error-toast">{error}</div>

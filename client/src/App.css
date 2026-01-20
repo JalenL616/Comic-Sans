@@ -1027,26 +1027,17 @@
 
 .scan-content-live {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: var(--space-md);
-  gap: var(--space-md);
-}
-
-/* Camera Container - maintains aspect ratio */
-.live-camera-container {
   position: relative;
-  width: 100%;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
-  background: var(--color-bg-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin: auto;
 }
 
-.live-camera-video {
+/* Fullscreen Camera */
+.live-camera-fullscreen {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-primary);
+}
+
+.live-camera-video-full {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1094,7 +1085,6 @@
   background: white;
   opacity: 0;
   pointer-events: none;
-  border-radius: var(--radius-lg);
 }
 
 .capture-flash.active {
@@ -1102,21 +1092,17 @@
 }
 
 @keyframes flashPulse {
-  0% { opacity: 0.6; }
+  0% { opacity: 0.5; }
   100% { opacity: 0; }
 }
 
-/* Bottom Controls */
-.scan-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-lg);
-  z-index: 10;
-}
 
-/* Capture Button - iPhone Camera Style */
+/* Capture Button - Fixed Bottom Center */
 .capture-button {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -1127,9 +1113,8 @@
   align-items: center;
   justify-content: center;
   transition: opacity 0.15s ease;
-  flex-shrink: 0;
-  position: relative;
   padding: 3px;
+  z-index: 20;
 }
 
 .capture-button:active:not(:disabled) .capture-button-inner {
@@ -1173,8 +1158,11 @@
   100% { transform: scale(1); }
 }
 
-/* Mini Disconnect Button */
+/* Exit Button - Fixed Bottom Right */
 .disconnect-button-mini {
+  position: absolute;
+  bottom: 50px;
+  right: var(--space-lg);
   padding: var(--space-sm) var(--space-md);
   background: rgba(255, 255, 255, 0.15);
   color: white;
@@ -1183,6 +1171,7 @@
   font-size: 0.8rem;
   cursor: pointer;
   transition: all var(--transition-fast);
+  z-index: 20;
 }
 
 .disconnect-button-mini:hover {
@@ -1190,27 +1179,30 @@
   transform: none;
 }
 
-/* Mini Scanned Comic Preview */
+/* Scanned Comic Notification - Fixed Bottom Left */
 .scanned-comic-mini {
+  position: absolute;
+  bottom: 40px;
+  left: var(--space-lg);
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  background: var(--color-bg-card);
+  background: rgba(30, 34, 48, 0.95);
   padding: var(--space-sm);
   border-radius: var(--radius-md);
   max-width: 200px;
-  animation: slideUp 0.3s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: notificationSlide 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 20;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes notificationSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .scanned-comic-mini.duplicate {
   border-color: var(--color-warning);
-  box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
 }
 
 .scanned-comic-image-mini {
@@ -1250,16 +1242,20 @@
   color: var(--color-warning);
 }
 
-/* Error Toast */
+/* Error Toast - Above capture button */
 .scan-error-toast {
-  text-align: center;
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(231, 76, 60, 0.95);
   color: white;
   padding: var(--space-sm) var(--space-lg);
   border-radius: var(--radius-md);
   font-size: 0.85rem;
   animation: fadeIn 0.2s ease-out;
-  margin: 0 var(--space-md);
+  z-index: 20;
+  white-space: nowrap;
 }
 
 @keyframes fadeIn {
