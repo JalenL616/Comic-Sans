@@ -104,12 +104,12 @@ export function QRConnect({ onComicReceived }: QRConnectProps) {
     <>
       {!isConnected ? (
         <button onClick={connect} className="qr-connect-button">
-          Connect Phone
+          Scan with Phone
         </button>
       ) : (
         <div className="qr-button-group">
           <button onClick={openModal} className="qr-connect-button qr-show-button">
-            {status === 'connected' ? 'Phone Connected' : 'Show QR Code'}
+            {status === 'connected' ? 'Phone Connected' : 'Show QR'}
           </button>
           <button onClick={disconnect} className="qr-disconnect-button">
             Disconnect

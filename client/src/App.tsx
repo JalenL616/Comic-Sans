@@ -385,42 +385,47 @@ function HomePage() {
     <>
       <div className="controls">
         <SearchBar onSearch={handleSearch} />
-        <FileUpload onComicFound={handleFileUpload} />
-        <QRConnect onComicReceived={handleQRScan} />
 
-        {user && (
-          <div className="import-export-buttons">
-            <button onClick={handleExport} className="export-button" disabled={comics.length === 0}>
-              Export
-            </button>
-            <label className="import-button">
-              Import
-              <input
-                type="file"
-                accept=".csv,.txt"
-                onChange={handleImport}
-                style={{ display: 'none' }}
-              />
-            </label>
-          </div>
-        )}
+        <div className="scan-actions">
+          <FileUpload onComicFound={handleFileUpload} />
+          <span className="scan-divider">or</span>
+          <QRConnect onComicReceived={handleQRScan} />
+        </div>
 
         {comics.length > 0 && (
           <div className="controls-row">
-            <div className="sort-controls">
-              <label htmlFor="sort-select">Sort:</label>
-              <select
-                id="sort-select"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as SortOption)}
-                className="sort-select"
-              >
-                <option value="custom">Custom Order</option>
-                <option value="a-z">Series A-Z</option>
-                <option value="z-a">Series Z-A</option>
-              </select>
+            <div className="controls-left">
+              <div className="sort-controls">
+                <label htmlFor="sort-select">Sort:</label>
+                <select
+                  id="sort-select"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value as SortOption)}
+                  className="sort-select"
+                >
+                  <option value="custom">Custom Order</option>
+                  <option value="a-z">Series A-Z</option>
+                  <option value="z-a">Series Z-A</option>
+                </select>
+              </div>
             </div>
             <div className="action-buttons">
+              {user && (
+                <>
+                  <button onClick={handleExport} className="export-button" disabled={comics.length === 0}>
+                    Export
+                  </button>
+                  <label className="import-button">
+                    Import
+                    <input
+                      type="file"
+                      accept=".csv,.txt"
+                      onChange={handleImport}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </>
+              )}
               <button onClick={handleClearAll} className="clear-button">
                 Clear All ({comics.length})
               </button>

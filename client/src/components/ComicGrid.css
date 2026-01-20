@@ -1,23 +1,62 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMIC GRID - The Collector's Gallery
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .comic-grid-container {
   max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg);
+  position: relative;
+}
+
+/* Section header for the grid */
+.comic-grid-container::before {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 83, 0.3), transparent);
+  margin-bottom: var(--space-xl);
 }
 
 .comic-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 50px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-lg);
   justify-items: center;
 }
 
+/* Grid item animations */
 .comic-grid-item {
-  transition: transform 0.2s, opacity 0.2s;
+  transition: all var(--transition-base);
+  animation: cardFadeIn 0.4s ease-out backwards;
 }
 
+/* Staggered animation for grid items */
+.comic-grid-item:nth-child(1) { animation-delay: 0.05s; }
+.comic-grid-item:nth-child(2) { animation-delay: 0.1s; }
+.comic-grid-item:nth-child(3) { animation-delay: 0.15s; }
+.comic-grid-item:nth-child(4) { animation-delay: 0.2s; }
+.comic-grid-item:nth-child(5) { animation-delay: 0.25s; }
+.comic-grid-item:nth-child(6) { animation-delay: 0.3s; }
+.comic-grid-item:nth-child(7) { animation-delay: 0.35s; }
+.comic-grid-item:nth-child(8) { animation-delay: 0.4s; }
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Dragging states */
 .comic-grid-item.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
+  opacity: 0.4;
+  transform: scale(0.95) rotate(2deg);
+  z-index: 100;
 }
 
 .comic-grid-item.drag-over {
@@ -27,19 +66,49 @@
 .comic-grid-item.drag-over::before {
   content: '';
   position: absolute;
-  inset: -4px;
-  border: 2px dashed #3b82f6;
-  border-radius: 12px;
+  inset: -6px;
+  border: 2px dashed var(--color-accent-gold);
+  border-radius: calc(var(--radius-xl) + 6px);
   pointer-events: none;
+  animation: dashedPulse 1s ease-in-out infinite;
 }
+
+@keyframes dashedPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Empty state */
+.comic-grid:empty::after {
+  content: 'Your collection is empty. Start by searching for comics or scanning covers.';
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  padding: var(--space-3xl);
+  background: var(--gradient-card);
+  border-radius: var(--radius-xl);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
   .comic-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-md);
   }
 
   .comic-grid-container {
-    padding: 10px;
+    padding: var(--space-md);
+  }
+}
+
+@media (min-width: 1400px) {
+  .comic-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-xl);
   }
 }

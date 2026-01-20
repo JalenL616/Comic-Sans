@@ -7,7 +7,7 @@ export function Header() {
   return (
     <header className="site-header">
       <Link to="/" className="site-title">
-        <h1>Comic Scans</h1>
+        <h1>Comic Vault</h1>
       </Link>
 
       <nav className="header-nav">
